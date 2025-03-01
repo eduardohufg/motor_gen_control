@@ -2,7 +2,7 @@ import serial
 import time
 
 class MotorController:
-    def __init__(self, port, baudrate=115200) -> bool:
+    def __init__(self, port, baudrate=115200):
 
         """
         Initialize the motor controller object
@@ -15,10 +15,8 @@ class MotorController:
         try:
             self.uart = serial.Serial(self.port, self.baudrate, timeout=1)
             time.sleep(2)
-            return True
         except serial.SerialException as e:
             self.uart = None
-            return False
 
     def __del__(self) -> None:
         if self.uart is not None:
