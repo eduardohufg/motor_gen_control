@@ -25,6 +25,8 @@ setup(
     entry_points={
         'console_scripts': [
             'motor_gen_control = motor_gen_control.motor_control:main',
+            'motor_calibration = motor_gen_control.motor_calibration:main',
+            'motor_calibration_cli = motor_gen_control.motor_calibration_cli:main',
         ],
     },
 )

@@ -117,6 +117,10 @@ class MotorControl(Node):
     def close_uart(self, sig, frame) -> None:
         if self.motor:
             self.motor.close_motor()
+        self.get_logger().info("Cerrando nodo de calibración.")
+        
+        if rclpy.ok(): 
+            rclpy.shutdown()
         sys.exit(0)
 
     def callback_joint2(self, msg: Float64) -> None:

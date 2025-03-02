@@ -1,9 +1,19 @@
-/motor_control:
+/motor_gen_control:
     ros__parameters:
         port: "/dev/ttyTHS1"
         kp: 1.1
         ki: 1.1
         kd: 0.005
         min_angle: -90.0
-        max_angle: 90.0
+        max_angle: 100.0 
         zero_encoder_pos: 2011.0
+
+/motor_calibration:
+    ros__parameters:
+        port: "/dev/ttyTHS1"
+
+/motor_calibration_cli:
+    ros__parameters:
+        port: "/dev/ttyTHS1"
+    
+
