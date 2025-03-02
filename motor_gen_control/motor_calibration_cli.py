@@ -22,9 +22,15 @@ def get_key():
 class MotorCalibrationCLI(Node):
     def __init__(self):
         super().__init__('motor_calibration_cli')
-        self.config_path = os.path.join(get_package_share_directory('motor_gen_control'), 'config', 'config.yaml')
+        
         self.declare_parameter('port', '/dev/ttyTHS1')
+        self.declare_parameter('username', 'eduardohufg')
+
         self.port = self.get_parameter('port').get_parameter_value().string_value
+        self.username = self.get_parameter('username').get_parameter_value().string_value
+
+        self.config_path = os.path.join(get_package_share_directory('motor_gen_control'), 'config', 'config.yaml')
+        self.config_path2 = os.path.join(f'/home/{self.username}/ros2_ws/src/motor_gen_control/config', 'config.yaml')
         
         self.motor = MotorController(self.port, 1000000)
         self.motor.motor_mode(2)
@@ -65,26 +71,28 @@ class MotorCalibrationCLI(Node):
         """Guarda la posición actual como la nueva posición cero."""
         zero_position = self.motor.get_position()
         self.get_logger().info(f'Nueva posición cero: {zero_position:.2f}')
-        self.update_yaml_file({'zero_encoder_pos': zero_position})
+        self.update_yaml_file(self.config_path, {'zero_encoder_pos': zero_position})
+        self.update_yaml_file(self.config_path2, {'zero_encoder_pos': zero_position})
     
     def set_limits(self):
         """Permite ingresar nuevos límites de ángulo manualmente."""
         try:
             min_angle = float(input("Ingrese el nuevo ángulo mínimo: "))
             max_angle = float(input("Ingrese el nuevo ángulo máximo: "))
-            self.update_yaml_file({'min_angle': min_angle, 'max_angle': max_angle})
+            self.update_yaml_file(self.config_path, {'min_angle': min_angle, 'max_angle': max_angle})
+            self.update_yaml_file(self.config_path2, {'min_angle': min_angle, 'max_angle': max_angle})
             self.get_logger().info(f'Límites actualizados: min={min_angle}, max={max_angle}')
         except ValueError:
             self.get_logger().error("Entrada inválida. No se actualizaron los límites.")
     
-    def update_yaml_file(self, params_to_update):
+    def update_yaml_file(self, file_path, params_to_update):
         """Actualiza el archivo de configuración YAML."""
         try:
-            if not os.path.exists(self.config_path):
-                self.get_logger().error(f'El archivo de configuración no existe: {self.config_path}')
+            if not os.path.exists(file_path):
+                self.get_logger().error(f'El archivo de configuración no existe: {file_path}')
                 return
             
-            with open(self.config_path, 'r') as file:
+            with open(file_path, 'r') as file:
                 config_data = yaml.safe_load(file) or {}
             
             if '/motor_gen_control' not in config_data:
@@ -93,10 +101,10 @@ class MotorCalibrationCLI(Node):
             for param, value in params_to_update.items():
                 config_data['/motor_gen_control']['ros__parameters'][param] = value
             
-            with open(self.config_path, 'w') as file:
+            with open(file_path, 'w') as file:
                 yaml.dump(config_data, file, default_flow_style=False)
             
-            self.get_logger().info(f'Archivo actualizado: {self.config_path}')
+            self.get_logger().info(f'Archivo actualizado: {file_path}')
         except Exception as e:
             self.get_logger().error(f'Error al actualizar el archivo: {e}')
 
