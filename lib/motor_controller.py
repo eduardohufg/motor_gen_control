@@ -2,7 +2,7 @@ import serial
 import time
 
 class MotorController:
-    def __init__(self, port, baudrate=115200):
+    def __init__(self, port, baudrate=115200, mode=0) -> None:
 
         """
         Initialize the motor controller object
@@ -15,14 +15,19 @@ class MotorController:
         try:
             self.uart = serial.Serial(self.port, self.baudrate, timeout=1)
             time.sleep(2)
+            if self.uart.is_open:
+                self.motor_mode(mode)
         except serial.SerialException as e:
             self.uart = None
 
     def __del__(self) -> None:
-        if self.uart is not None:
-            commad = "STOP\n"
-            self.uart.write(commad.encode())
-            self.uart.close()
+        if self.uart and self.uart.is_open:
+            try:
+                commad = "STOP\n"
+                self.uart.write(commad.encode())
+                self.uart.close()
+            except Exception:
+                pass
 
     def init_motor(self) -> bool:
         if self.uart is not None:
@@ -40,7 +45,7 @@ class MotorController:
             return False
         
     def motor_mode(self, mode) -> bool:
-        if self.uart is not None:
+        if self.uart is not None and self.uart.is_open:
             command = f"MODE,{mode}\n"
             self.uart.write(command.encode())
             return True

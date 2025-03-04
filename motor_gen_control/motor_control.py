@@ -46,8 +46,7 @@ class MotorControl(Node):
         self.add_on_set_parameters_callback(self.parameter_callback)    
         self.angle_joint2: float = 0.0
 
-        self.motor = MotorController(self.port, 1000000)
-        self.motor.motor_mode(0)
+        self.motor = MotorController(self.port, 1000000, 0)
         self.motor.set_pid_gains(self.kp, self.ki, self.kd)
         self.motor.set_windup_limit(20)
     
@@ -90,7 +89,7 @@ class MotorControl(Node):
                     self.get_logger().info(f"New kd value: {self.kd}")
 
             elif param.name == 'min_angle':
-                if self.min_angle < -180.0:
+                if param.value.double_value < -180.0:
                     self.get_logger().warn("min_angle cannot be less than -180.0")
                     return SetParametersResult(successful=False, reason="min_angle cannot be less than -180.0")
                 else:
@@ -100,7 +99,7 @@ class MotorControl(Node):
 
             elif param.name == 'max_angle':
 
-                if self.max_angle > 180.0:
+                if param.value.double_value > 180.0:
                     self.get_logger().warn("max_angle cannot be greater than 180.0")
                     return SetParametersResult(successful=False, reason="max_angle cannot be greater than 180.0")
                 else:
@@ -115,9 +114,9 @@ class MotorControl(Node):
                 self.get_logger().info(f"New zero_encoder_pos value: {self.zero_encoder_pos}")
 
     def close_uart(self, sig, frame) -> None:
-        if self.motor:
+        if self.motor and self.motor.uart and self.motor.uart.is_open:
             self.motor.close_motor()
-        self.get_logger().info("Cerrando nodo de calibración.")
+            self.get_logger().info("Motor closed.")
         
         if rclpy.ok(): 
             rclpy.shutdown()
@@ -146,8 +145,9 @@ def main(args=None):
     try:
         rclpy.spin(motor_control)
     except KeyboardInterrupt:
-        pass
+        motor_control.get_logger().info("Interrupción detectada, cerrando el nodo...")
     finally:
+        motor_control.close_uart(None, None)
         motor_control.destroy_node()
         rclpy.shutdown()
 

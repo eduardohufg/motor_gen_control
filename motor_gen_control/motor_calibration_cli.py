@@ -32,8 +32,7 @@ class MotorCalibrationCLI(Node):
         self.config_path = os.path.join(get_package_share_directory('motor_gen_control'), 'config', 'config.yaml')
         self.config_path2 = os.path.join(f'/home/{self.username}/ros2_ws/src/motor_gen_control/config', 'config.yaml')
         
-        self.motor = MotorController(self.port, 1000000)
-        self.motor.motor_mode(2)
+        self.motor = MotorController(self.port, 1000000, 3)
         
         if self.motor.init_motor():
             self.get_logger().info(f"Motor connected on port: {self.port}")
