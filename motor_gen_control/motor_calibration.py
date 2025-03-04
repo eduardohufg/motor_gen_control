@@ -71,13 +71,12 @@ class MotorCalibration(Node):
             pass
 
     def close_uart(self, sig, frame) -> None:
-        if self.motor:
+        if self.motor and self.motor.uart and self.motor.uart.is_open:
             self.motor.close_motor()
-        self.get_logger().info("Cerrando nodo de calibración.")
+            self.get_logger().info("Motor closed.")
         
-        if rclpy.ok():  # Asegura que ROS no se apague dos veces
+        if rclpy.ok(): 
             rclpy.shutdown()
-        
         sys.exit(0)
 
 

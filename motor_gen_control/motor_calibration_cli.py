@@ -7,6 +7,7 @@ import tty
 from rclpy.node import Node
 from ament_index_python.packages import get_package_share_directory
 from lib.motor_controller import MotorController
+import signal
 
 def get_key():
     """Captura una tecla presionada sin necesidad de presionar Enter."""
@@ -41,6 +42,16 @@ class MotorCalibrationCLI(Node):
             sys.exit(1)
         
         self.run_cli()
+        signal.signal(signal.SIGINT, self.close_uart)
+
+    def close_uart(self, sig, frame) -> None:
+        if self.motor and self.motor.uart and self.motor.uart.is_open:
+            self.motor.close_motor()
+            self.get_logger().info("Motor closed.")
+        
+        if rclpy.ok(): 
+            rclpy.shutdown()
+        sys.exit(0)
 
     def run_cli(self):
         """Ejecuta la interfaz de calibración desde la terminal."""
@@ -109,7 +120,16 @@ class MotorCalibrationCLI(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    MotorCalibrationCLI()
+    motor_cal = MotorCalibrationCLI()
+    try:
+        rclpy.spin(motor_cal)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        motor_cal.destroy_node()
+        rclpy.shutdown()
+
+    
 
 if __name__ == '__main__':
     main()

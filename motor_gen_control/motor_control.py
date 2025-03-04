@@ -24,11 +24,11 @@ class MotorControl(Node):
         super().__init__('motor_control')
 
         self.declare_parameter('port', '/dev/ttyTHS1')
-        self.declare_parameter('kp', 1.1)
-        self.declare_parameter('ki', 1.1)
+        self.declare_parameter('kp', 0.11)
+        self.declare_parameter('ki', 0.11)
         self.declare_parameter('kd', 0.005)
-        self.declare_parameter('min_angle', -90.0)
-        self.declare_parameter('max_angle', 90.0)
+        self.declare_parameter('min_angle', -10.0)
+        self.declare_parameter('max_angle', 180.0)
         self.declare_parameter('zero_encoder_pos', 2011.0)
         
         self.port = self.get_parameter('port').get_parameter_value().string_value

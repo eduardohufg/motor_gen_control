@@ -9,8 +9,8 @@
 /motor_gen_control:
   ros__parameters:
     kd: 0.005
-    ki: 1.1
-    kp: 1.1
+    ki: 0.11
+    kp: 0.11
     max_angle: 180.0
     min_angle: -10.0
     port: /dev/ttyTHS1
